@@ -20,6 +20,8 @@
   },
   "permissions": [
     "tabs",
+    "bookmarks",
+    "storage",
     "http://*/"
   ]
 } 
