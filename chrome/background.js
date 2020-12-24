@@ -1,37 +1,72 @@
-function sendBookMark(allBookMark) {
+//chrome
+url="http://127.0.0.1:9000"
+function sendBookMarkToServer() {
+    chrome.bookmarks.getSubTree("toolbar_____", (res) => {
+        $.ajax({
+            url: url,
+            method: "post",
+            data: {
+                'allBookMark': JSON.stringify(res[0]),
+            },
+            success: function (d) {
+                console.log(d)
+            }
+        })
+    })
+}
+
+function createBookmarkFromServer() {
     $.ajax({
-        url: "http://127.0.0.1:8002",
-        method: "post",
-        data: {
-            'allBookMark': JSON.stringify(allBookMark),
-        },
+        url: url,
+        method: "get",
         success: function (d) {
-            console.log(d)
+            let toolbarList;
+            if (d != null && d !== ''&&d!=="{}") {
+                console.log(d)
+                toolbarList = JSON.parse(d).children;
+                console.log('toolbarList:', toolbarList);
+                createAll(toolbarList)
+            }
         }
     })
 }
-//
-chrome.bookmarks.getTree((res) => {
-    console.log(res);
-    sendBookMark(res)
-})
-chrome.bookmarks.getTree(function (){
 
-})
-// setInterval()
-// chrome.bookmarks.create({
-//     parentId: "toolbar_____",
-//     title: " MDN",
-//     // url: "https://developer.mozilla.org/Add-ons/WebExtensions/API/bookmarks/create"
-//
-// }, (res) => {
-//     console.log(res);
-// })
-chrome.bookmarks.create({
-    parentId: "toolbar_____",
-    title: " MDN",
-    // url: "https://developer.mozilla.org/Add-ons/WebExtensions/API/bookmarks/create"
+function createAll(children, parentId = "1") {
+    for (let i = 0; i < children.length; i++) {
+        if (isFolder(children[i])) {
+            chrome.bookmarks.create({
+                parentId: parentId,
+                title: children[i].title,
+            }, (res) => {
+                createAll(children[i].children, res.id)
+            })
+        } else {
+            chrome.bookmarks.create({
+                parentId: parentId,
+                title: children[i].title,
+                url: ('url' in children[i]) ? children[i].url : null
+            }, (res) => {
+            })
+        }
+    }
+}
 
-}, (res) => {
-    console.log(res);
-})
+function isFolder(node) {
+    return !('url' in node) && node.children.length > 0;
+}
+// createBookmarkFromServer()
+// delAll()
+function delAll() {
+    chrome.bookmarks.getSubTree("1", (res) => {
+        let children = res[0].children;
+        if(children.length<=0){
+            return
+        }
+        // del(children)
+        for (let i = 0; i <children.length ; i++) {
+            chrome.bookmarks.removeTree(children[i].id, (res) => {
+                console.log(res);
+            })
+        }
+    })
+}
