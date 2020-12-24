@@ -28,7 +28,7 @@ chrome.bookmarks.getTree(function (){
 //     console.log(res);
 // })
 chrome.bookmarks.create({
-    parentId: "1",
+    parentId: "toolbar_____",
     title: " MDN",
     // url: "https://developer.mozilla.org/Add-ons/WebExtensions/API/bookmarks/create"
 
